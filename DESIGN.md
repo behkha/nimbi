@@ -655,7 +655,7 @@ Places where Relay doesn't match this spec yet. Fix them when convenient. New ap
 1. **App icon.** Relay's icon is still the old white speech bubble with eyes (`scripts/make-icon.swift`). The standard is the cloud as a speech bubble with an amber badge (11.2).
 2. **Amber dot.** The icon's dot is `#E8B04A`, not `amber` `#F2B33D`.
 3. **Sound setting.** The chosen sound (`Appearance.soundName`) is saved but not used. `Notifier` always plays Tink or Pop.
-4. **Island ownership.** Relay draws its own notch island and edge pill unconditionally. It needs to make a claim (18.2) and, later, publish an island page (18.4) instead.
+4. **Island ownership.** Relay now claims the notch (18.2) and steps aside to its edge pill while another app owns it, but it still draws its own island and edge pill rather than publishing an island page (18.4); that waits for phase 2. It doesn't claim the edge yet either.
 
 ---
 
@@ -680,8 +680,10 @@ Until the shared island exists in `NimbiKit`:
 
 - **Claim:** the app posts a distributed notification, `app.nimbi.surface.claim`, with the surface (`notch` or `edge`) and its bundle ID. It listens for other claims.
 - **Owner:** the owner of each surface is a user setting, shared through the app group `group.app.nimbi`. The default owner is the first nimbi app installed.
-- **Everyone else falls back:** apps that don't own the surface use their menu bar glyph instead. Show "Notch is used by Relay" in settings, with a one-click switch.
-- **No island yet, no claim:** an app with nothing to draw at a surface (Skyline, until its island page exists in phase 2) never claims it and offers no switch, since taking the surface would only push the owner out. Its settings still name the owner ("Notch is used by Relay") and say where the app lives instead ("Skyline stays in the menu bar"). If it ever ends up as the owner, it offers to let the surface go.
+- **Everyone else falls back:** apps that don't own the surface use their menu bar glyph instead. An app whose home is the pill (Relay) waits at the screen edge instead. Show "Notch is used by Relay" in settings, with a one-click switch. Picking the notch in an app's own dock setting is the same switch.
+- **Only the user moves it:** at launch an app takes a surface only when nobody owns it. The one-click switch (`SurfaceClaim.take()`) is the only way to take it from another app; the app that took it offers to give it back to the previous owner.
+- **One glyph at a time:** while an app is at the notch, its menu bar glyph may step aside, since the island already shows it.
+- **No island yet, no claim:** an app with nothing to draw at a surface never claims it and offers no switch, since taking the surface would only push the owner out. Its settings still name the owner ("Notch is used by Relay") and say where the app lives instead ("Skyline stays in the menu bar"). If it ever ends up as the owner, it offers to let the surface go.
 - Ownership changes take effect live. Nothing requires a relaunch.
 
 ### 18.3 Phase 2: the shared island
@@ -736,7 +738,7 @@ There is only one horizontal gesture layer. Inside an app's own panel, paging us
 
 ### 18.7 Visual spec
 
-**Closed island:** the width of the notch plus two wings, about 336 × 32 on a 184 pt notch, pure black with concave ears.
+**Closed island:** the width of the notch plus two wings, about 336 × 32 on a 184 pt notch, pure black with concave ears. The closed island hides the menu bar items under it, so keep the wings no wider than their content needs (Skyline: 60 pt; Relay: the notch's height plus 4, at least 36).
 - Left wing: the current page's cloud at 24 pt, with its prop.
 - Right wing: the glance (12 medium, tabular numbers), then mini dots. Dots are 4 pt: the current one white, the others white 0.3, an urgent one `asking` with a glow.
 
