@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Page not found · nimbi</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; min-height: 100%; background: #000; }
+  body { color: #fff; font: 17px/1.55 -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; display: grid; place-items: center; min-height: 100vh; padding: 24px 16px; box-sizing: border-box; text-align: center; }
+  main { display: flex; flex-direction: column; align-items: center; gap: 18px; max-width: 520px; }
+  svg { width: 180px; height: 180px; filter: drop-shadow(0 0 18px #8E86C9) drop-shadow(0 0 50px rgba(142,134,201,.35)); animation: breathe 5.5s ease-in-out infinite; }
+  h1 { margin: 0; font: 500 clamp(34px, 6vw, 52px)/1.05 'Fredoka', ui-rounded, system-ui, sans-serif; text-wrap: balance; }
+  p { margin: 0; color: rgba(255,255,255,.68); }
+  a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; border-radius: 999px; background: #fff; color: #000; text-decoration: none; font-weight: 600; }
+  a:focus-visible { outline: 2px solid #B07CFF; outline-offset: 3px; }
+  @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  @media (prefers-reduced-motion: reduce) { svg { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <svg viewBox="-10 -10 120 120" aria-hidden="true">
+    <defs>
+      <linearGradient id="b" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7FD0FF"/><stop offset=".5" stop-color="#B9B4FF"/><stop offset="1" stop-color="#F3B6EC"/></linearGradient>
+      <radialGradient id="c" cx=".44" cy=".62" r=".38"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    </defs>
+    <circle cx="50" cy="50" r="46" fill="url(#b)"/><circle cx="50" cy="50" r="46" fill="url(#c)"/><circle cx="50" cy="50" r="46" fill="#8A8FB8" fill-opacity=".3"/>
+    <path d="M42 46 Q48.5 51 55 46 M61 47 Q67.5 52 74 47" fill="none" stroke="#24163A" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="58" cy="62" r="1.8" fill="#24163A" fill-opacity=".6"/>
+    <g fill="#C9C4FF" font-family="Fredoka, sans-serif" font-weight="600"><text x="86" y="14" font-size="11">z</text><text x="95" y="3" font-size="15">z</text></g>
+  </svg>
+  <h1>This page drifted away.</h1>
+  <p>The cloud fell asleep looking for it. Nothing lives at this address.</p>
+  <a href="/">Back to nimbi</a>
+</main>
+</body>
+</html>

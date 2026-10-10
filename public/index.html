@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>nimbi · little clouds for your Mac</title>
+<meta name="description" content="nimbi makes small, native Mac apps. Each one is the same little cloud doing one job, and you can tell how things are going just by how it looks.">
+<link rel="canonical" href="https://nimbi.studio/">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="nimbi">
+<meta property="og:title" content="nimbi · Software with a mood">
+<meta property="og:description" content="Small, native Mac apps. One little cloud, a new job each time.">
+<meta property="og:url" content="https://nimbi.studio/">
+<meta property="og:image" content="https://nimbi.studio/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The nimbi cloud mascot glowing on black, next to the words Software with a mood.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/vendor/gsap.min.js" defer></script>
+<script src="/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/assets/site.js" defer></script>
+</head>
+<body>
+<div class="progress" data-a="progress" aria-hidden="true"></div>
+<div class="wrap">
+  <nav class="top" data-a="nav" aria-label="Main">
+    <a class="mark" href="#top">nimbi</a>
+    <div class="links">
+      <a href="#apps">Apps</a>
+      <a href="#moods">Moods</a>
+      <a href="#maker">Maker</a>
+      <a class="pill" href="https://github.com/behkha">Follow along</a>
+    </div>
+  </nav>
+
+  <section class="hero" id="top">
+    <div class="copy">
+      <div class="eyebrow" data-a="eyebrow">nimbi · a family of small Mac apps</div>
+      <h1 aria-label="Software with a mood."><span class="w"><span data-a="word">Software</span></span> <span class="w"><span data-a="word">with</span></span> <span class="w"><span data-a="word">a</span></span> <span class="w"><span data-a="word" class="mood">mood.</span></span></h1>
+      <p class="lede" data-a="lede">nimbi makes small, native apps for the Mac. Each one is the same little cloud doing one job, and you can tell how things are going just by how it looks. Try it.</p>
+      <div class="steps" id="steps" role="group" aria-label="Try a situation"></div>
+    </div>
+    <div class="stage" data-a="stage" aria-label="Live cloud demo">
+      <div class="halo" id="halo"></div>
+      <div class="pill-edge" id="edge" aria-hidden="true"></div>
+      <div class="toast" id="toast" role="status" hidden></div>
+      <div id="stageCloud" data-cloud="busy" data-size="220"></div>
+      <div class="caption" id="caption"></div>
+    </div>
+  </section>
+
+  <section class="block" id="moods">
+    <h2 data-a="reveal">You read it from the corner of your eye.</h2>
+    <div class="legend">
+      <div class="mood-card" data-a="card"><div data-cloud="asleep" data-size="90" data-uniform></div><b>Asleep</b><span>Nothing running.</span></div>
+      <div class="mood-card" data-a="card"><div data-cloud="busy" data-size="90" data-uniform></div><b>Busy</b><span>Things are happening.</span></div>
+      <div class="mood-card" data-a="card"><div data-cloud="asking" data-size="90" data-uniform></div><b>Asking</b><span>Something needs you.</span></div>
+      <div class="mood-card" data-a="card"><div data-cloud="angry" data-size="90" data-uniform></div><b>Angry</b><span>It's been a while.</span></div>
+      <div class="mood-card" data-a="card"><div data-cloud="happy" data-size="90" data-uniform></div><b>Happy</b><span>Done. Thank you.</span></div>
+    </div>
+  </section>
+
+  <section class="block" id="apps">
+    <div class="family">
+      <div class="copy" data-a="reveal">
+        <h2>A new cloud whenever one is ready.</h2>
+        <p>Every nimbi app is the same little cloud with a new job. There's no roadmap and no countdown. When one is ready, it joins the log.</p>
+        <div class="row"><a class="pill ghost" href="https://github.com/behkha">Follow along</a></div>
+      </div>
+      <div class="log">
+        <span class="rail" data-a="rail" aria-hidden="true"></span>
+        <ol aria-label="nimbi releases">
+        <li class="entry" data-a="entry">
+          <span class="tile"><span data-cloud="relaxed" data-size="36" data-still data-tail data-badge data-follows="false"></span></span>
+          <div><div class="when"><time datetime="2026-10">October 2026</time></div><a class="what" href="#relay">Relay</a><span class="chip">OUT</span><div class="why">An inbox for your Claude Code agents.</div></div>
+        </li>
+        <li class="entry now" data-a="entry">
+          <span class="tile forming" aria-hidden="true"><span class="ring"></span><span class="orb" style="animation-duration:5s"><i></i></span><span class="orb" style="animation-duration:7s;animation-delay:-2s"><i style="animation-delay:-1s"></i></span><span class="orb" style="animation-duration:6s;animation-delay:-4s"><i style="animation-delay:-2s"></i></span></span>
+          <div><div class="when">Now</div><div class="what">The next cloud is forming</div><div class="why">Follow along to see it first.</div></div>
+        </li>
+        <li class="entry later" data-a="entry" aria-hidden="true">
+          <span class="tile" style="opacity:.5"></span>
+          <div><div class="when">Later</div><div class="what">…</div></div>
+        </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="relay">
+    <div class="relay">
+      <div class="copy" data-a="relaytext">
+        <h2><small>THE FIRST CLOUD OUT</small>Relay</h2>
+        <p>An inbox for your Claude Code agents. Every question, permission prompt and finished task lands in one card on the edge of your screen, and your answer goes back to the exact agent that asked.</p>
+        <div class="keys">
+          <kbd data-a="kbd">⌃⌥Space</kbd><span>Focus the card</span>
+          <kbd data-a="kbd">1 – 9</kbd><span>Pick an answer</span>
+          <kbd data-a="kbd">J  K</kbd><span>Previous / next card</span>
+          <kbd data-a="kbd">V</kbd><span>Talk to an agent</span>
+          <kbd data-a="kbd">esc</kbd><span>Undo, then close</span>
+        </div>
+        <div class="row">
+          <a class="pill ghost" href="https://github.com/behkha/relay">Relay on GitHub</a>
+          <span class="meta">macOS 13+ · Apple silicon</span>
+        </div>
+      </div>
+      <video data-a="gif" class="demo" autoplay muted loop playsinline preload="metadata" width="960" height="738" poster="/assets/relay-demo-poster.jpg" aria-label="Relay demo: an agent asks a question, the inbox card slides out of the edge pill with the cloud, and prompts are answered from the keyboard">
+          <source src="/assets/relay-demo.webm" type="video/webm">
+          <source src="/assets/relay-demo.mp4" type="video/mp4">
+        </video>
+    </div>
+  </section>
+
+  <section class="block" id="maker">
+    <div class="maker" data-a="reveal">
+      <div data-cloud="happy" data-size="120"></div>
+      <div class="copy">
+        <h2>Made by one human and a lot of clouds.</h2>
+        <p>I'm behkha. I build the small tools I wish my Mac already had, then give each one a face. Native Swift, no Electron, no accounts unless an app truly needs one.</p>
+        <div class="row"><a class="pill ghost" href="https://github.com/behkha">behkha on GitHub</a></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer data-a="footer">
+  <div data-cloud="asleep" data-size="90"></div>
+  <div class="line">Suspiciously quiet down here.</div>
+  <div class="small">nimbi · little clouds for your Mac · made by behkha</div>
+</footer>
+</body>
+</html>
