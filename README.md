@@ -2,6 +2,8 @@
 
 The landing page for **nimbi**, a family of small native Mac apps. Static files, no build step, hosted on Cloudflare Pages.
 
+The brand and design system shared by every nimbi app lives in [DESIGN.md](DESIGN.md).
+
 ```
 public/                 everything that gets deployed
   index.html            the page (head, meta, share tags)
