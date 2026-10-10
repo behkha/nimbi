@@ -222,7 +222,7 @@ All UI is dark. There is no light theme. Users pick between two dark themes:
 | `glow` | `#B07CFF`: the brand's resting glow, also used for focus rings |
 | `ink` | `#24163A`: eyes, and text set on aurora |
 
-Use the aurora gradient (sky → lavender → blush) only on the cloud, the wordmark, and one hero word on the web. Never use it on buttons, panels or text in product UI.
+Use the aurora gradient (sky → lavender → blush) only on the cloud, the wordmark, and one hero word on the web. Never use it on buttons, panels or text in product UI. The one flat reuse is `rain` (4.5), which borrows `sky` as a single color.
 
 ### 4.5 State
 
@@ -234,6 +234,7 @@ Use the aurora gradient (sky → lavender → blush) only on the cloud, the word
 | `red` | `#FF6961` | destructive text, deny |
 | `asking` | `#FFD426` | the cloud's asking mood, inbox badge |
 | `listening` | `#FF4F5E` | mic level bars |
+| `rain` | `#7FD0FF` | rain amounts: chart bars, island bars. `sky` as one flat color, never the aurora gradient |
 | `selectedFill` / `selectedBorder` | `#143A20` / green 0.55 | a picked option |
 | `promptBubble` | `#13467E` | the user's words |
 | `agentBubble` | `#262626` | the app's or agent's words |
@@ -581,6 +582,7 @@ enum Nimbi {
         static let destructive = Color(hex: "#FF6961")
         static let asking = Color(hex: "#FFD426")
         static let listening = Color(hex: "#FF4F5E")
+        static let rain = Color(hex: "#7FD0FF")
         static let selectedFill = Color(hex: "#143A20")
         static let selectedBorder = Color(hex: "#30D158").opacity(0.55)
         static let promptBubble = Color(hex: "#13467E")
@@ -614,7 +616,7 @@ NimbiKit ships these tokens (with a few more) as `Nimbi`, plus `Color(hex:)`. Im
   --line: rgba(255,255,255,.1);
   --text: #FFFFFF; --dim: rgba(255,255,255,.68); --faint: rgba(255,255,255,.48);
   --sky: #7FD0FF; --lavender: #B9B4FF; --blush: #F3B6EC; --glow: #B07CFF; --ink: #24163A;
-  --amber: #F2B33D; --asking: #FFD426; --done: #30D158; --working: #0A84FF;
+  --amber: #F2B33D; --asking: #FFD426; --done: #30D158; --working: #0A84FF; --rain: #7FD0FF;
   --aurora: linear-gradient(90deg, var(--sky), var(--lavender) 50%, var(--blush));
   --display: 'Fredoka', ui-rounded, system-ui, sans-serif;
   --body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
@@ -679,6 +681,7 @@ Until the shared island exists in `NimbiKit`:
 - **Claim:** the app posts a distributed notification, `app.nimbi.surface.claim`, with the surface (`notch` or `edge`) and its bundle ID. It listens for other claims.
 - **Owner:** the owner of each surface is a user setting, shared through the app group `group.app.nimbi`. The default owner is the first nimbi app installed.
 - **Everyone else falls back:** apps that don't own the surface use their menu bar glyph instead. Show "Notch is used by Relay" in settings, with a one-click switch.
+- **No island yet, no claim:** an app with nothing to draw at a surface (Skyline, until its island page exists in phase 2) never claims it and offers no switch, since taking the surface would only push the owner out. Its settings still name the owner ("Notch is used by Relay") and say where the app lives instead ("Skyline stays in the menu bar"). If it ever ends up as the owner, it offers to let the surface go.
 - Ownership changes take effect live. Nothing requires a relaunch.
 
 ### 18.3 Phase 2: the shared island
@@ -715,7 +718,7 @@ Until the shared island exists in `NimbiKit`:
 
 - **A swipe beats data.** After the user swipes away from a page, it comes back on its own only if its urgency *rises*.
 - **Seen clears.** A glowing dot clears when the user lands on that page.
-- **Urgency is honest.** `needsYou` means the user must act. A weather update is never `needsYou`, at most `notice` ("rain in 20 min").
+- **Urgency is honest.** `needsYou` means the user must act. A weather update is never `needsYou`, at most `notice` ("rain in 20 min"). The one exception is a hazard the user should act on within three hours: thunder, storm-force wind (mean ≥ 20.8 m/s, Beaufort 9) or heat of 35 °C or more. Rain, snow, cold and everything else stay at `notice` or below.
 - **Most urgent first in the closed island.** It shows the glance of the most urgent page; ties go to the page last viewed.
 
 ### 18.6 Navigation
