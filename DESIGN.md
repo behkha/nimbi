@@ -347,7 +347,7 @@ When an app lives at the notch:
 ## 7. Layout and sizing
 
 - **Edge-anchored windows.** Panels hang from the pill or the notch.
-- **Panel widths** (each multiplied by `textScale`): card 360, list 318, settings 272–290, filter 260, talk bar 330.
+- **Panel widths** (each multiplied by `textScale`): card 360, list 318, settings 272–290, filter 260, talk bar 330, wide two-pane 600 (Skyline's dropdown; about the open island's width, so the two line up at the notch).
 - **Edge pill:**
   - Collapsed: 10·pillScale wide, with status glyphs 5.5·pillScale tall.
   - Expanded: a column of 32·pillScale buttons, 7·pillScale apart.
@@ -448,7 +448,7 @@ All springs are written as SwiftUI `.spring(response:dampingFraction:)`.
 
 ### 11.1 In-app UI
 
-SF Symbols, medium weight. No custom icon sets, and no emoji in the UI.
+SF Symbols, medium weight. No custom icon sets, and no emoji in the UI. Weather symbols may use SF Symbols' multicolor rendering (filled variants: sun yellow, rain blue), since there the color is the information.
 
 ### 11.2 App icons (standard for every nimbi app)
 
