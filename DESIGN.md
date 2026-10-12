@@ -7,7 +7,7 @@ The shared design language for every nimbi app and for the nimbi website. Relay 
 **Order of authority:** what the user asks for explicitly, then this file, then patterns in existing nimbi code, then platform defaults (Apple HIG).
 
 **Source of truth for values:**
-- macOS: [NimbiKit](https://github.com/behkha/nimbi-kit) (`Tokens.swift`, `Cloud.swift`, `Mood.swift`, `Components.swift`, `Appearance.swift`, `SurfaceClaim.swift`). Add it with `.package(url: "https://github.com/behkha/nimbi-kit.git", from: "0.1.0")`.
+- macOS: [NimbiKit](https://github.com/behkha/nimbi-kit) (`Tokens.swift`, `Cloud.swift`, `Form.swift`, `Mood.swift`, `Components.swift`, `Appearance.swift`, `SurfaceClaim.swift`). Add it with `.package(url: "https://github.com/behkha/nimbi-kit.git", from: "0.1.0")`.
 - Patterns NimbiKit doesn't cover yet (the card, option rows, the island): Relay's `CardView.swift`, `Components.swift`, `Panels.swift`, `PillView.swift`, `NotchView.swift`
 - Web: `public/assets/site.css` and `public/assets/site.js` in this repo
 
@@ -163,6 +163,7 @@ Mood is the status system. Every app maps its own states onto these moods, and n
 
 - Don't recolor the skin per app. App identity comes from the job the cloud does, never from a different palette.
 - Don't add limbs, hats or extra features to the cloud itself. A prop sits next to it, as in the app icon rules (11.2).
+- **One exception to the outline: Tempo's tools.** Tempo's cloud may take the shape of the tool for the moment (NimbiKit's `CloudForm`): an hourglass while you focus, a bell when time is up, a mug on a short break, a crescent moon on a long one. Skin, face, eyes, gaze and moods stay; the outline springs between shapes (`spring(0.55, 0.58)`, so it lands with a squash and a stretch) and comes back to the cloud at rest. Every other app keeps the cloud's outline, and the menu bar glyph and app icon are always the cloud.
 - Never show two different clouds talking to each other in product UI. On marketing pages it's fine.
 - Don't use emoji as stand-ins for the cloud's marks. Draw them as the mascot does.
 
@@ -347,7 +348,7 @@ When an app lives at the notch:
 ## 7. Layout and sizing
 
 - **Edge-anchored windows.** Panels hang from the pill or the notch.
-- **Panel widths** (each multiplied by `textScale`): card 360, list 318, settings 272–290, filter 260, talk bar 330, wide two-pane 600 (Skyline's dropdown; about the open island's width, so the two line up at the notch).
+- **Panel widths** (each multiplied by `textScale`): card 360, list 318, timer 300 (Tempo), settings 272–300, filter 260, talk bar 330, wide two-pane 600 (Skyline's dropdown; about the open island's width, so the two line up at the notch).
 - **Edge pill:**
   - Collapsed: 10·pillScale wide, with status glyphs 5.5·pillScale tall.
   - Expanded: a column of 32·pillScale buttons, 7·pillScale apart.
@@ -363,7 +364,7 @@ When an app lives at the notch:
 
 ## 8. Components
 
-Most of these live in NimbiKit: key hints, status glyphs, the button styles, the pill chrome, panel backgrounds, tooltips and listening bars. The rest (card, option and choice rows, page dots, undo bar, composer, list rows) are still in Relay; move each into NimbiKit the first time a second app needs it, rather than copying it.
+Most of these live in NimbiKit: key hints, status glyphs, the button styles, the pill chrome, panel backgrounds, tooltips, listening bars and the undo bar. The rest (card, option and choice rows, page dots, composer, list rows) are still in Relay; move each into NimbiKit the first time a second app needs it, rather than copying it.
 
 | Component | Spec |
 |---|---|
@@ -379,7 +380,7 @@ Most of these live in NimbiKit: key hints, status glyphs, the button styles, the
 | **Key hint** | Radius 5, minimum 17×17, 9.5 semibold. On dark: white 0.6 text on white 0.11. On light: black 0.5 on black 0.09. Put it inside or next to the control it triggers. |
 | **Filter chips** | All · Asking · Done, each with a count. Selected: white capsule with black text. Others: subtle capsule. Show them only when they help (two or more kinds present). |
 | **Page dots** | Active: blue capsule 14×5. Others: white 0.28 dots 5×5. Up to 7. Hidden for 0–1 items. |
-| **Undo bar** | `well` box radius 12: icon and label (12.5 medium) plus an "esc · to undo" capsule. A 2.5 pt blue line drains over the undo window: 2.0 s, or 2.5 s for destructive actions. |
+| **Undo bar** (`UndoBar`) | `well` box radius 12: icon and label (12.5 medium) plus an "esc · to undo" capsule. A 2.5 pt blue line drains over the undo window: 2.0 s, or 2.5 s for destructive actions. |
 | **Step chips** | Done: green check. Current: amber 6 pt dot. Upcoming: white 0.45 ring. |
 | **Composer** | Capsule text field (white 0.07, white 0.2 stroke when focused), camera toggle, send button (blue when there is text). |
 | **List rows** | Glyph, name 13 medium, meta icons. Row actions sit at 0.45 opacity and rise to 0.95 on hover. Needs-you rows get an amber 0.08 wash. A just-finished row glows green 0.16 and fades out over 1.6 s. |
@@ -441,6 +442,7 @@ All springs are written as SwiftUI `.spring(response:dampingFraction:)`.
 - **Tink** for something that needs the user. **Pop** for something that finished.
 - Sound can be turned off with one switch. Picking a sound in settings plays a preview.
 - Never loop sounds or play them for routine progress.
+- **Ambience is not a notification.** A soft loop the user turns on for themselves (Tempo's rain, distant storm, wind or brown noise under focus) is allowed: off by default, synthesized in the app (no audio files), fading in over about 1.5 s and out over 1 s, and silent whenever its job isn't running.
 
 ---
 
@@ -457,6 +459,8 @@ SF Symbols, medium weight. No custom icon sets, and no emoji in the UI. Weather 
 - **Content:** the cloud with the full aurora skin, about 55% of the tile, eyes looking right, with a soft violet glow.
 - **One prop per app,** in aurora or a single state color, telling the app's job:
   - Relay: the cloud becomes a speech bubble, with a tail at its lower left and an amber `#F2B33D` "asking" badge at its upper right.
+  - Skyline: three `rain` drops below the cloud's left side.
+  - Tempo: a ring of time, an aurora arc three quarters of the way round the cloud (which shrinks to 50% of the tile to make room).
   - Future apps: one prop only, for example sound waves, a notch, or a second small cloud.
 - **Never:** text, a second character, or a colored background.
 - **Sizes:** 16, 32, 64, 128, 256, 512 and 1024 px, generated procedurally like Relay's `scripts/make-icon.swift`.
