@@ -59,6 +59,7 @@
   // The gradients are shared: define them once for the whole page.
   document.body.insertAdjacentHTML('afterbegin', `<svg width="0" height="0" style="position:absolute" aria-hidden="true">${DEFS}</svg>`);
 
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clouds = [];
   class Cloud {
     constructor(host) {
@@ -69,6 +70,9 @@
       this.uniform = 'uniform' in d;
       this.tail = 'tail' in d;
       this.badge = 'badge' in d;
+      this.rain = 'rain' in d;
+      this.ring = 'ring' in d;
+      this.rainfall = 'rainfall' in d && !reduced;
       this.follows = !this.still && d.follows !== 'false';
       host.setAttribute('aria-hidden', 'true');
       this.set(d.cloud);
@@ -103,9 +107,12 @@
               <g class="nb-face">${EYES[e.eyes]}${MOUTHS[e.mouth]}</g>
               ${this.still ? '' : MARKS[e.mark]}
               ${this.badge ? '<circle cx="91" cy="9" r="17" fill="#F2B33D" fill-opacity=".22"/><circle cx="91" cy="9" r="11.5" fill="#F2B33D"/>' : ''}
+              ${this.rain ? [[18, 106, 1], [40, 118, .9], [62, 106, .8]].map(([x, y, k]) => `<path d="M${x} ${y - 16 * k} Q${x + 7 * k} ${y - 5 * k} ${x + 7 * k} ${y} A${7 * k} ${7 * k} 0 0 1 ${x - 7 * k} ${y} Q${x - 7 * k} ${y - 5 * k} ${x} ${y - 16 * k} Z" fill="#7FD0FF"/>`).join('') : ''}
+              ${this.ring ? '<circle cx="50" cy="50" r="66" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="9"/><path d="M50 -16 A66 66 0 1 1 -16 50" fill="none" stroke="url(#nbBase)" stroke-width="9" stroke-linecap="round"/>' : ''}
             </svg>
           </div>
         </div>
+        ${this.rainfall ? `<div class="nb-rainfall">${Array.from({ length: 16 }, (_, i) => `<i style="left:${(i * 61) % 100}%;animation-delay:${(-(i * .37) % 1).toFixed(2)}s;animation-duration:${(.8 + (i % 4) * .12).toFixed(2)}s"></i>`).join('')}</div>` : ''}
       </div>`;
       this.face = this.host.querySelector('.nb-face');
       this.look();
@@ -168,8 +175,140 @@
       if (s.toast) gsap.fromTo(toast, { x: 24, scale: .5, opacity: 0 }, { x: 0, scale: 1, opacity: 1, duration: .45, ease: 'back.out(1.8)' });
     }
   }
-  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   pick(1, false);
+
+  // Menu bar glyphs: the cloud with its eyes cut out.
+  document.querySelectorAll('.mbcloud').forEach((el) => {
+    el.innerHTML = `<svg viewBox="0 0 100 100" width="16" height="16"><path fill="#fff" fill-rule="evenodd" d="${PATH} M45 46 m-7 0 a7 10 0 1 0 14 0 a7 10 0 1 0 -14 0 Z M64 47 m-7 0 a7 10 0 1 0 14 0 a7 10 0 1 0 -14 0 Z"/></svg>`;
+  });
+
+  // ---------- Tempo: the cloud becomes the tool ----------
+  // The same forms as NimbiKit's CloudForm: 240 points each, clockwise from the top, so the
+  // outline springs from one to the next point by point.
+  (() => {
+    const host = document.getElementById('tempoStage');
+    if (!host) return;
+    const N = 240, TAU = Math.PI * 2;
+    const poly = (v, per = 40) => { const o = []; v.forEach((a, i) => { const b = v[(i + 1) % v.length]; for (let k = 0; k < per; k++) o.push([a[0] + (b[0] - a[0]) * k / per, a[1] + (b[1] - a[1]) * k / per]); }); return o; };
+    const smooth = (p, n) => { for (let s = 0; s < n; s++) p = p.map((c, i) => { const a = p[(i - 1 + p.length) % p.length], b = p[(i + 1) % p.length]; return [(a[0] + 2 * c[0] + b[0]) / 4, (a[1] + 2 * c[1] + b[1]) / 4]; }); return p; };
+    function resample(pts) {
+      let area = 0; pts.forEach((a, i) => { const b = pts[(i + 1) % pts.length]; area += a[0] * b[1] - b[0] * a[1]; });
+      if (area < 0) pts = pts.slice().reverse();
+      let top = 0; pts.forEach((p, i) => { const t = pts[top]; if (p[1] < t[1] - 1e-6 || (Math.abs(p[1] - t[1]) < 1e-6 && Math.abs(p[0]) < Math.abs(t[0]))) top = i; });
+      pts = pts.slice(top).concat(pts.slice(0, top));
+      const L = [0]; for (let i = 1; i <= pts.length; i++) { const p = pts[i - 1], q = pts[i % pts.length]; L.push(L[i - 1] + Math.hypot(q[0] - p[0], q[1] - p[1])); }
+      const total = L[L.length - 1], out = []; let j = 0;
+      for (let k = 0; k < N; k++) { const d = k / N * total; while (L[j + 1] < d) j++; const p = pts[j], q = pts[(j + 1) % pts.length], f = (d - L[j]) / ((L[j + 1] - L[j]) || 1); out.push([p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f]); }
+      return out;
+    }
+    function crescent() {
+      const R = .84, r = .72, cx = .36, cy = -.26, lit = [];
+      for (let i = 0; i < 720; i++) { const t = i / 720 * TAU, x = R * Math.cos(t), y = R * Math.sin(t); if (Math.hypot(x - cx, y - cy) >= r) lit.push([x, y, t]); }
+      let gap = 0; for (let i = 1; i < lit.length; i++) if (lit[i][2] - lit[i - 1][2] > .05) gap = i;
+      const arc = lit.slice(gap).concat(lit.slice(0, gap)).map((p) => [p[0], p[1]]);
+      const a0 = arc[0], a1 = arc[arc.length - 1];
+      const t0 = Math.atan2(a1[1] - cy, a1[0] - cx); let t1 = Math.atan2(a0[1] - cy, a0[0] - cx);
+      while (t1 > t0) t1 -= TAU;
+      const back = []; for (let i = 0; i <= 160; i++) { const t = t0 + (t1 - t0) * i / 160; back.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]); }
+      return arc.concat(back);
+    }
+    const FORMS = {
+      cloud: { pts: Array.from({ length: N }, (_, i) => { const t = -Math.PI / 2 + i / N * TAU, lobe = Math.pow(Math.abs(Math.cos(4 * t + .2)), .7), k = .93 + .043 * (2 * lobe - 1) + .012 * Math.sin(2 * t + 1); return [k * Math.cos(t), k * Math.sin(t)]; }), face: [.08, 0], eyes: 1 },
+      hourglass: { pts: resample(smooth(poly([[-.62, -.92], [.62, -.92], [.62, -.74], [.13, -.1], [.13, .1], [.66, .74], [.66, .92], [-.66, .92], [-.66, .74], [-.13, .1], [-.13, -.1], [-.62, -.74]]), 4)), face: [0, .27], eyes: .7 },
+      bell: { pts: resample(smooth(poly([[-.1, -.94], [.1, -.94], [.13, -.8], [.44, -.64], [.6, -.2], [.64, .36], [.9, .66], [.9, .8], [-.9, .8], [-.9, .66], [-.64, .36], [-.6, -.2], [-.44, -.64], [-.13, -.8]]), 4)), face: [0, .04], eyes: .9 },
+      mug: { pts: resample(smooth(poly([[-.66, -.5], [.44, -.5], [.44, -.34], [.82, -.3], [.92, .04], [.8, .38], [.44, .42], [.44, .6], [.26, .82], [-.48, .82], [-.66, .6]]), 4)), face: [-.06, .07], eyes: .9 },
+      moon: { pts: resample(smooth(crescent(), 3)), face: [-.22, .07], eyes: .78 }
+    };
+    const MOMENTS = [
+      { label: 'Focus', dot: '#0A84FF', form: 'hourglass', mood: 'busy', ring: '#0A84FF', minutes: 25, phase: 'Focus · 2 of 4' },
+      { label: 'Time’s up', dot: '#F2B33D', form: 'bell', mood: 'asking', ring: '#F2B33D', minutes: 0, phase: 'A break is next' },
+      { label: 'Short break', dot: '#30D158', form: 'mug', mood: 'happy', ring: '#30D158', minutes: 5, phase: 'Back to it at 14:50' },
+      { label: 'Long break', dot: '#8E86C9', form: 'moon', mood: 'asleep', ring: '#30D158', minutes: 15, phase: 'Four done. Rest.' },
+      { label: 'Paused', dot: '#B07CFF', form: 'cloud', mood: 'relaxed', ring: '#0A84FF', minutes: 25, phase: 'The cloud is waiting' }
+    ];
+    host.innerHTML = `<svg viewBox="-36 -36 172 172" role="img" aria-label="The Tempo cloud">
+      <defs><clipPath id="tempoClip"><path class="shape-d"/></clipPath></defs>
+      <circle cx="50" cy="50" r="80" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="5"/>
+      <circle class="ring" cx="50" cy="50" r="80" fill="none" stroke-width="5" stroke-linecap="round" transform="rotate(-90 50 50)" pathLength="100" stroke-dasharray="100 100"/>
+      <g class="swing"><g class="shape">
+        <g clip-path="url(#tempoClip)">
+          <path class="shape-d" fill="url(#nbBase)"/><path class="shape-d" fill="url(#nbSky)"/><path class="shape-d" fill="url(#nbBlush)"/><path class="shape-d" fill="url(#nbCore)"/>
+          <path class="sand" fill="#24163A" fill-opacity=".2"/>
+          <path class="shape-d" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="5" filter="url(#nbRim)"/>
+        </g>
+        <g class="steam" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.6" stroke-linecap="round"><path d="M38 20 q4 -6 0 -12 t0 -12"/><path d="M50 20 q4 -6 0 -12 t0 -12"/><path d="M62 20 q4 -6 0 -12 t0 -12"/></g>
+        <g class="tface"><g class="nb-face"></g></g>
+        <g class="mark"></g>
+      </g></g>
+    </svg>`;
+    const shapes = host.querySelectorAll('.shape-d'), shapeG = host.querySelector('.shape'), swing = host.querySelector('.swing');
+    const tface = host.querySelector('.tface'), face = host.querySelector('.nb-face'), mark = host.querySelector('.mark');
+    const ring = host.querySelector('.ring'), sand = host.querySelector('.sand'), steam = host.querySelector('.steam');
+    const timeEl = document.getElementById('tempoTime'), phaseEl = document.getElementById('tempoPhase');
+    const pts = FORMS.cloud.pts.map((p) => p.slice()), vel = pts.map(() => [0, 0]);
+    let target = FORMS.cloud, moment = null, started = 0, raf = 0, last = 0, visible = true, auto = !reduced, step = 0, timer = 0;
+    const draw = () => { const d = pts.map(([x, y], i) => (i ? 'L' : 'M') + (50 + 50 * x).toFixed(2) + ' ' + (50 + 50 * y).toFixed(2)).join(' ') + ' Z'; shapes.forEach((p) => p.setAttribute('d', d)); };
+    function show(i, user) {
+      const m = MOMENTS[i]; moment = m; started = performance.now(); target = FORMS[m.form];
+      const e = MOODS[m.mood];
+      face.innerHTML = EYES[e.eyes] + MOUTHS[e.mouth];
+      mark.innerHTML = MARKS[e.mark] || '';
+      const [fx, fy] = target.face, k = target.eyes;
+      tface.setAttribute('transform', `translate(${(58 + 100 * (fx - .08)).toFixed(1)} ${(46.5 + 100 * fy).toFixed(1)}) scale(${k}) translate(-58 -46.5)`);
+      shapeG.style.filter = `drop-shadow(0 0 6px ${e.glow}) drop-shadow(0 0 22px ${e.glow}99)`;
+      ring.setAttribute('stroke', m.ring);
+      swing.setAttribute('class', 'swing' + (m.form === 'bell' && !reduced ? ' bell' : ''));
+      steam.style.display = m.form === 'mug' ? '' : 'none';
+      phaseEl.textContent = m.phase;
+      stepsEl2.querySelectorAll('.step').forEach((b, j) => b.setAttribute('aria-pressed', String(i === j)));
+      if (user) { auto = false; clearTimeout(timer); }
+      if (reduced) { target.pts.forEach((p, j) => { pts[j][0] = p[0]; pts[j][1] = p[1]; }); draw(); }
+      tick(); kick();
+    }
+    // The minutes run (fast) while a moment shows; the hourglass's sand follows them.
+    function tick() {
+      if (!moment) return;
+      const run = moment.minutes ? Math.min(1, (performance.now() - started) / 9000) : 1;
+      const left = moment.minutes * 60 * (1 - (moment.label === 'Paused' ? .48 : run * .35) - (moment.label === 'Paused' ? 0 : .1));
+      timeEl.textContent = moment.minutes ? `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(Math.floor(left % 60)).padStart(2, '0')}` : '00:00';
+      ring.setAttribute('stroke-dasharray', `${moment.minutes ? (left / (moment.minutes * 60) * 100).toFixed(2) : 100} 100`);
+      if (moment.form === 'hourglass') {
+        const p = 1 - left / (moment.minutes * 60), h = .72 * p, lvl = -.1 - .72 * (1 - p), w = .1 + .46 * Math.min(1, (-.1 - lvl) / .64);
+        sand.setAttribute('d', `M${50 - 50 * w} ${50 + 50 * lvl} L${50 + 50 * w} ${50 + 50 * lvl} L55 45 L45 45 Z M20 93 Q50 ${93 - 100 * h} 80 93 Z`);
+      } else sand.setAttribute('d', '');
+    }
+    function frame(now) {
+      raf = 0;
+      const dt = Math.min(.033, (now - last) / 1000 || .016); last = now;
+      let moving = false;
+      pts.forEach((p, i) => {
+        for (const a of [0, 1]) {
+          const f = 170 * (target.pts[i][a] - p[a]) - 13 * vel[i][a];
+          vel[i][a] += f * dt; p[a] += vel[i][a] * dt;
+          if (Math.abs(vel[i][a]) > .002 || Math.abs(target.pts[i][a] - p[a]) > .002) moving = true;
+        }
+      });
+      draw(); tick();
+      if (visible && (moving || moment)) raf = requestAnimationFrame(frame);
+    }
+    function kick() { if (!raf && visible && !reduced) { last = performance.now(); raf = requestAnimationFrame(frame); } }
+    function tour() { if (!auto) return; show(step % MOMENTS.length, false); step++; timer = setTimeout(tour, 3600); }
+    const stepsEl2 = document.getElementById('tempoSteps');
+    MOMENTS.forEach((m, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'step';
+      b.innerHTML = `<span class="dot" style="background:${m.dot};box-shadow:0 0 10px ${m.dot}"></span>${m.label}`;
+      b.addEventListener('click', () => show(i, true));
+      stepsEl2.appendChild(b);
+    });
+    draw();
+    // Only animate while the stage is on screen.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) { kick(); if (auto && !timer) tour(); } }).observe(host);
+    }
+    show(0, false);
+    if (auto) { step = 1; timer = setTimeout(tour, 3600); }
+  })();
 
   // The log's rail starts at the first dot, wherever text wrapping puts it.
   const rail = document.querySelector('.log .rail'), firstEntry = document.querySelector('.log .entry');
@@ -204,7 +343,12 @@
   gsap.fromTo(q('rail'), { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: '.log', start: 'top 80%', end: 'bottom 45%', scrub: .5 } });
   gsap.from(q('entry'), { x: 50, opacity: 0, duration: .9, stagger: .18, ease: 'power3.out', clearProps: 'transform', scrollTrigger: { trigger: '.log', start: 'top 80%' } });
   gsap.from(q('relaytext'), { x: -70, opacity: 0, duration: 1.1, ease: 'power3.out', clearProps: 'transform', scrollTrigger: { trigger: q('relaytext')[0], start: 'top 80%' } });
-  gsap.from(q('kbd'), { scale: .4, opacity: 0, duration: .5, stagger: .07, ease: 'back.out(2.5)', clearProps: 'transform', scrollTrigger: { trigger: q('relaytext')[0], start: 'top 60%' } });
+  q('apptext').forEach((el) => gsap.from(el, { x: -70, opacity: 0, duration: 1.1, ease: 'power3.out', clearProps: 'transform', scrollTrigger: { trigger: el, start: 'top 80%' } }));
+  q('appstage').forEach((el) => gsap.from(el, { scale: .92, opacity: 0, duration: 1.2, ease: 'expo.out', clearProps: 'transform', scrollTrigger: { trigger: el, start: 'top 85%' } }));
+  document.querySelectorAll('.relay').forEach((sec) => {
+    const k = sec.querySelectorAll('[data-a="kbd"]');
+    if (k.length) gsap.from(k, { scale: .4, opacity: 0, duration: .5, stagger: .07, ease: 'back.out(2.5)', clearProps: 'transform', scrollTrigger: { trigger: sec, start: 'top 60%' } });
+  });
   gsap.fromTo(q('gif'), { clipPath: 'inset(14% 14% 14% 14% round 24px)', scale: .94 }, { clipPath: 'inset(0% 0% 0% 0% round 24px)', scale: 1, ease: 'none', scrollTrigger: { trigger: q('gif')[0], start: 'top 95%', end: 'top 35%', scrub: .6 } });
   gsap.from(q('footer'), { y: 60, opacity: 0, duration: 1.2, ease: 'power3.out', clearProps: 'transform', scrollTrigger: { trigger: q('footer')[0], start: 'top 95%' } });
   window.addEventListener('load', () => ScrollTrigger.refresh());

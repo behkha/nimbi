@@ -84,6 +84,14 @@
           <span class="tile"><span data-cloud="relaxed" data-size="36" data-still data-tail data-badge data-follows="false"></span></span>
           <div><div class="when"><time datetime="2026-10">October 2026</time></div><a class="what" href="#relay">Relay</a><span class="chip">OUT</span><div class="why">An inbox for your Claude Code agents.</div></div>
         </li>
+        <li class="entry" data-a="entry">
+          <span class="tile"><span data-cloud="relaxed" data-size="36" data-still data-rain data-follows="false"></span></span>
+          <div><div class="when"><time datetime="2026-10">October 2026</time></div><a class="what" href="#skyline">Skyline</a><span class="chip">OUT</span><div class="why">The weather in your menu bar, from a cloud that would know.</div></div>
+        </li>
+        <li class="entry" data-a="entry">
+          <span class="tile"><span data-cloud="relaxed" data-size="30" data-still data-ring data-follows="false"></span></span>
+          <div><div class="when"><time datetime="2026-10">October 2026</time></div><a class="what" href="#tempo">Tempo</a><span class="chip">NEW</span><div class="why">A focus timer whose cloud becomes the hourglass.</div></div>
+        </li>
         <li class="entry now" data-a="entry">
           <span class="tile forming" aria-hidden="true"><span class="ring"></span><span class="orb" style="animation-duration:5s"><i></i></span><span class="orb" style="animation-duration:7s;animation-delay:-2s"><i style="animation-delay:-1s"></i></span><span class="orb" style="animation-duration:6s;animation-delay:-4s"><i style="animation-delay:-2s"></i></span></span>
           <div><div class="when">Now</div><div class="what">The next cloud is forming</div><div class="why">Follow along to see it first.</div></div>
@@ -118,6 +126,55 @@
           <source src="/assets/relay-demo.webm" type="video/webm">
           <source src="/assets/relay-demo.mp4" type="video/mp4">
         </video>
+    </div>
+  </section>
+
+  <section class="block" id="skyline">
+    <div class="relay">
+      <div class="copy" data-a="apptext">
+        <h2><small>THE SECOND CLOUD OUT</small>Skyline</h2>
+        <p>The weather in your menu bar: the cloud and the temperature, with drizzle under it when rain starts within the hour. Click for the sky now, the next 24 hours as a skyline of rain bars under the temperature, and the week ahead. The cloud wears the weather: a sun behind it, rain falling past it, a moon and stars at night.</p>
+        <div class="keys">
+          <kbd data-a="kbd">← →</kbd><span>Another day</span>
+          <kbd data-a="kbd">D</kbd><span>Everything, or just what matters</span>
+          <kbd data-a="kbd">L</kbd><span>Change place</span>
+          <kbd data-a="kbd">R</kbd><span>Ask MET again, once the forecast expires</span>
+        </div>
+        <div class="row">
+          <a class="pill ghost" href="https://github.com/behkha/nimbi-skyline">Skyline on GitHub</a>
+          <span class="meta">macOS 13+ · Weather data © MET Norway</span>
+        </div>
+      </div>
+      <div class="appstage sky" data-a="appstage" aria-label="Skyline's cloud in the rain, next to its menu bar item">
+        <div class="menubar" aria-hidden="true"><span class="mbcloud"></span>18°<span class="ghost">Mon 14:20</span></div>
+        <div data-cloud="busy" data-size="170" data-rainfall></div>
+        <div class="caption">Rain within the hour. It's already dressed for it.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="tempo">
+    <div class="relay">
+      <div class="copy" data-a="apptext">
+        <h2><small>THE NEWEST CLOUD</small>Tempo</h2>
+        <p>A focus timer in the menu bar. <i>Tempo</i> is Italian for both time and weather. While you work, the cloud becomes an hourglass and its sand runs down. When time is up it turns into a ringing bell, on a break a steaming mug, and on a long break a sleepy moon. If you like, soft rain plays while you focus.</p>
+        <div class="keys">
+          <kbd data-a="kbd">space</kbd><span>Start, pause, carry on</span>
+          <kbd data-a="kbd">S</kbd><span>Skip to the next phase</span>
+          <kbd data-a="kbd">R</kbd><span>Start over (esc to undo)</span>
+          <kbd data-a="kbd">T</kbd><span>Name the task</span>
+          <kbd data-a="kbd">⌃⌥P</kbd><span>Start or pause from any app</span>
+        </div>
+        <div class="row">
+          <a class="pill ghost" href="https://github.com/behkha/nimbi-tempo">Tempo on GitHub</a>
+          <span class="meta">macOS 13+ · Apple silicon</span>
+        </div>
+      </div>
+      <div class="appstage" data-a="appstage" aria-label="Tempo's cloud changing shape with the timer">
+        <div id="tempoStage" class="tempo"></div>
+        <div class="tempo-read"><span class="tempo-time" id="tempoTime">25:00</span><span class="tempo-phase" id="tempoPhase">Ready</span></div>
+        <div class="steps tempo-steps" id="tempoSteps" role="group" aria-label="Try a moment"></div>
+      </div>
     </div>
   </section>
 
