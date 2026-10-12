@@ -7,8 +7,8 @@ The shared design language for every nimbi app and for the nimbi website. Relay 
 **Order of authority:** what the user asks for explicitly, then this file, then patterns in existing nimbi code, then platform defaults (Apple HIG).
 
 **Source of truth for values:**
-- macOS: [NimbiKit](https://github.com/behkha/nimbi-kit) (`Tokens.swift`, `Cloud.swift`, `Form.swift`, `Mood.swift`, `Components.swift`, `Appearance.swift`, `SurfaceClaim.swift`). Add it with `.package(url: "https://github.com/behkha/nimbi-kit.git", from: "0.1.0")`.
-- Patterns NimbiKit doesn't cover yet (the card, option rows, the island): Relay's `CardView.swift`, `Components.swift`, `Panels.swift`, `PillView.swift`, `NotchView.swift`
+- macOS: [NimbiKit](https://github.com/behkha/nimbi-kit) (`Tokens.swift`, `Cloud.swift`, `Form.swift`, `Mood.swift`, `NotchIsland.swift`, `Components.swift`, `Appearance.swift`, `SurfaceClaim.swift`). Add it with `.package(url: "https://github.com/behkha/nimbi-kit.git", from: "0.1.0")`.
+- Patterns NimbiKit doesn't cover yet (the card, option rows, the shared island of phase 2): Relay's `CardView.swift`, `Components.swift`, `Panels.swift`, `PillView.swift`, `NotchView.swift`
 - Web: `public/assets/site.css` and `public/assets/site.js` in this repo
 
 ---
@@ -689,6 +689,7 @@ Until the shared island exists in `NimbiKit`:
 - **One glyph at a time:** while an app is at the notch, its menu bar glyph may step aside, since the island already shows it.
 - **No island yet, no claim:** an app with nothing to draw at a surface never claims it and offers no switch, since taking the surface would only push the owner out. Its settings still name the owner ("Notch is used by Relay") and say where the app lives instead ("Skyline stays in the menu bar"). If it ever ends up as the owner, it offers to let the surface go.
 - Ownership changes take effect live. Nothing requires a relaunch.
+- **The code:** NimbiKit's `NotchOwnership` (owner, the switch and its words) and `NotchIsland` (the window, hover timing, keys and a panel hanging from it). Skyline drew the first app island; Tempo is the second.
 
 ### 18.3 Phase 2: the shared island
 
