@@ -691,7 +691,22 @@ Until the shared island exists in `NimbiKit`:
 - Ownership changes take effect live. Nothing requires a relaunch.
 - **The code:** NimbiKit's `NotchOwnership` (owner, the switch and its words) and `NotchIsland` (the window, hover timing, keys and a panel hanging from it). Skyline drew the first app island; Tempo is the second.
 
+### 18.2a Swiping between apps' own islands (built)
+
+Every app keeps its own island at the notch; a swipe moves the notch from one app to the next. This is what's built (12 Oct 2026), and it replaces the single-host island of 18.3 for now: the user wants each app's notch to stay its own, and Relay's notch to stay exactly as it is.
+
+- **The ring:** the nimbi apps a swipe goes through are the ones running that can be at the notch, in install order. Relay comes first while it runs with its pill set to the notch; then every app with a NimbiKit island, in the order they first launched (`islandApps` in the app group).
+- **A swipe hands the notch over:** a two-finger swipe, a drag or ← → on the open island (18.6's thresholds) makes the next app the owner, as the one-click switch does, so it sticks. The leaving page drifts out (18.8), its island lingers 0.3 s under the arriving one so the notch never shows a gap, and the next app's island opens at once with its page drifting in from that side. At either end the page only stretches and springs back.
+- **⌃⌥← / ⌃⌥→** move the notch from anywhere. Every island app registers them; only the first running one acts.
+- **Dots (18.7):** island apps draw the page dots (open) and 4 pt mini dots under the glance (closed), one per app in the ring; an app that needs you glows amber and pulses. Clicking a dot hands the notch to that app.
+- **Relay, unchanged:** Relay draws its own notch and has no dots. While Relay has the notch, the first island app watches for a two-finger swipe over Relay's island (armed once the pointer enters Relay's collapsed island, kept while it stays over the open dashboard's area) and hands the notch on. Relay already steps aside when another app takes the notch, and comes back when it's handed to it.
+- **Not yet:** a page that needs you doesn't come to the front on its own (18.5): that would move the notch without the user. Its amber dot says so instead.
+- **The code:** NimbiKit's `NotchRing` (the ring, hand-off, ⌃⌥← →, the watcher over Relay's island) and `NotchIsland` (swipes, drags, the drift and the dots). Pages mark their cloud and text with `.islandDrift(.cloud)` and `.islandDrift(.text)`.
+
 ### 18.3 Phase 2: the shared island
+
+On hold: see 18.2a. Kept here as the long-term option.
+
 
 - **One host.** The first nimbi app running hosts the island and draws every page. When it quits, another running nimbi app takes over within 1 s. No separate host app to install.
 - **Pages,** one per app, in install order. Order never changes because of urgency.
