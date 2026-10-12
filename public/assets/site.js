@@ -182,12 +182,10 @@
     el.innerHTML = `<svg viewBox="0 0 100 100" width="16" height="16"><path fill="#fff" fill-rule="evenodd" d="${PATH} M45 46 m-7 0 a7 10 0 1 0 14 0 a7 10 0 1 0 -14 0 Z M64 47 m-7 0 a7 10 0 1 0 14 0 a7 10 0 1 0 -14 0 Z"/></svg>`;
   });
 
-  // ---------- Tempo: the cloud becomes the tool ----------
-  // The same forms as NimbiKit's CloudForm: 240 points each, clockwise from the top, so the
-  // outline springs from one to the next point by point.
-  (() => {
-    const host = document.getElementById('tempoStage');
-    if (!host) return;
+  // ---------- the cloud's forms (NimbiKit's CloudForm) ----------
+  // 240 points each, clockwise from the top, so an outline springs from one form to the next
+  // point by point. Shared by Tempo's stage and the notch stage.
+  const FORMS = (() => {
     const N = 240, TAU = Math.PI * 2;
     const poly = (v, per = 40) => { const o = []; v.forEach((a, i) => { const b = v[(i + 1) % v.length]; for (let k = 0; k < per; k++) o.push([a[0] + (b[0] - a[0]) * k / per, a[1] + (b[1] - a[1]) * k / per]); }); return o; };
     const smooth = (p, n) => { for (let s = 0; s < n; s++) p = p.map((c, i) => { const a = p[(i - 1 + p.length) % p.length], b = p[(i + 1) % p.length]; return [(a[0] + 2 * c[0] + b[0]) / 4, (a[1] + 2 * c[1] + b[1]) / 4]; }); return p; };
@@ -212,13 +210,22 @@
       const back = []; for (let i = 0; i <= 160; i++) { const t = t0 + (t1 - t0) * i / 160; back.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]); }
       return arc.concat(back);
     }
-    const FORMS = {
+    return {
       cloud: { pts: Array.from({ length: N }, (_, i) => { const t = -Math.PI / 2 + i / N * TAU, lobe = Math.pow(Math.abs(Math.cos(4 * t + .2)), .7), k = .93 + .043 * (2 * lobe - 1) + .012 * Math.sin(2 * t + 1); return [k * Math.cos(t), k * Math.sin(t)]; }), face: [.08, 0], eyes: 1 },
       hourglass: { pts: resample(smooth(poly([[-.62, -.92], [.62, -.92], [.62, -.74], [.13, -.1], [.13, .1], [.66, .74], [.66, .92], [-.66, .92], [-.66, .74], [-.13, .1], [-.13, -.1], [-.62, -.74]]), 4)), face: [0, .27], eyes: .7 },
       bell: { pts: resample(smooth(poly([[-.1, -.94], [.1, -.94], [.13, -.8], [.44, -.64], [.6, -.2], [.64, .36], [.9, .66], [.9, .8], [-.9, .8], [-.9, .66], [-.64, .36], [-.6, -.2], [-.44, -.64], [-.13, -.8]]), 4)), face: [0, .04], eyes: .9 },
       mug: { pts: resample(smooth(poly([[-.66, -.5], [.44, -.5], [.44, -.34], [.82, -.3], [.92, .04], [.8, .38], [.44, .42], [.44, .6], [.26, .82], [-.48, .82], [-.66, .6]]), 4)), face: [-.06, .07], eyes: .9 },
       moon: { pts: resample(smooth(crescent(), 3)), face: [-.22, .07], eyes: .78 }
     };
+  })();
+
+  // ---------- Tempo: the cloud becomes the tool ----------
+  // The same forms as NimbiKit's CloudForm: 240 points each, clockwise from the top, so the
+  // outline springs from one to the next point by point.
+  (() => {
+    const host = document.getElementById('tempoStage');
+    if (!host) return;
+    const N = 240, TAU = Math.PI * 2;
     const MOMENTS = [
       { label: 'Focus', dot: '#0A84FF', form: 'hourglass', mood: 'busy', ring: '#0A84FF', minutes: 25, phase: 'Focus · 2 of 4' },
       { label: 'Time’s up', dot: '#F2B33D', form: 'bell', mood: 'asking', ring: '#F2B33D', minutes: 0, phase: 'A break is next' },
@@ -308,6 +315,114 @@
     }
     show(0, false);
     if (auto) { step = 1; timer = setTimeout(tour, 3600); }
+  })();
+
+  // ---------- the notch: swipe from app to app (DESIGN.md 18.2a) ----------
+  // Every app keeps its own island; a swipe hands the notch to the next one, whose page drifts in.
+  // One island shows at a time, as on the Mac. The agents and the forecast are made up.
+  (() => {
+    const screen = document.getElementById('notchStage'), scale = document.getElementById('notchScale');
+    if (!screen || !scale) return;
+    const caption = document.getElementById('notchCaption');
+    const TAU = Math.PI * 2;
+    const pill = (label, key) => `<span class="nst-pill">${label}<span class="nst-key">${key}</span></span>`;
+    const cloudBox = (cx, cy, size, mood) => `<span data-cloud="${mood}" data-size="${size}" data-follows="false" style="position:absolute;left:${cx - .75 * size}px;top:${cy - .75 * size}px"></span>`;
+    const pageText = (x, mid, name, title, sub, pills) => `<span class="nst-name" style="left:${x}px;top:${mid - 58}px">${name}</span><span class="nst-title" style="left:${x}px;top:${mid - 44}px">${title}</span><span class="nst-sub" style="left:${x}px;top:${mid - 10}px">${sub}</span><span class="nst-pills" style="left:${x}px;top:${mid + 14}px">${pills}</span>`;
+    // Tempo's cloud is an hourglass while you focus (NimbiKit's CloudForm).
+    const hourglass = () => {
+      const f = FORMS.hourglass, d = f.pts.map(([x, y], i) => (i ? 'L' : 'M') + (50 + 50 * x).toFixed(2) + ' ' + (50 + 50 * y).toFixed(2)).join(' ') + ' Z';
+      const k = f.eyes, fx = 58 + 100 * (f.face[0] - .08), fy = 46.5 + 100 * f.face[1];
+      return `<svg viewBox="-10 -10 120 120" width="110" height="110" style="position:absolute;left:19px;top:57px;overflow:visible;filter:drop-shadow(0 0 6px #6FC8FF) drop-shadow(0 0 18px #6FC8FF88)" aria-hidden="true">
+        <defs><clipPath id="nstGlass"><path d="${d}"/></clipPath></defs>
+        <g clip-path="url(#nstGlass)"><path d="${d}" fill="url(#nbBase)"/><path d="${d}" fill="url(#nbSky)"/><path d="${d}" fill="url(#nbBlush)"/><path d="${d}" fill="url(#nbCore)"/>
+        <path d="M24 26 L76 26 L55 45 L45 45 Z M20 93 Q50 66 80 93 Z" fill="#24163A" fill-opacity=".2"/>
+        <path d="${d}" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="5" filter="url(#nbRim)"/></g>
+        <g transform="translate(${fx.toFixed(1)} ${fy.toFixed(1)}) scale(${k}) translate(-58 -46.5)">${EYES.open}</g></svg>`;
+    };
+    const ring = (cx, cy) => `<svg width="100" height="100" viewBox="0 0 100 100" style="position:absolute;left:${cx - 50}px;top:${cy - 50}px" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/><circle cx="50" cy="50" r="42" fill="none" stroke="#0A84FF" stroke-width="6" stroke-linecap="round" pathLength="100" stroke-dasharray="72 100" transform="rotate(-90 50 50)"/><text x="50" y="57" text-anchor="middle" fill="#fff" font-size="20" font-weight="600" font-family="-apple-system, system-ui, sans-serif">18′</text></svg><span class="nst-sub" style="left:${cx - 20}px;top:${cy + 50}px;font-size:10px;color:rgba(255,255,255,.4)">2 of 4</span>`;
+    const chip = (x, y, name, color, bg) => `<span class="nst-chip" style="left:${x}px;top:${y}px;width:126px;background:${bg};border:1px solid ${color}55;color:${color}"><b style="background:${color}22"><i style="background:${color}"></i></b>${name}</span>`;
+    const PAGES = [
+      { id: 'relay', w: 610, h: 172, dots: false, say: 'Relay: its own dashboard, buttons and agents, as always.',
+        cloud: cloudBox(64, 99, 50, 'asking'),
+        text: `<span class="nst-btn" style="left:18px;top:5px"></span><span class="nst-btn" style="left:48px;top:5px;width:64px;border-radius:11px"></span>
+          <span class="nst-btn" style="right:18px;top:5px"></span><span class="nst-btn" style="right:48px;top:5px"></span><span class="nst-btn" style="right:78px;top:5px"></span>
+          <span class="nst-card" style="left:14px;top:40px;width:296px;height:118px"></span><span class="nst-card" style="left:318px;top:40px;width:278px;height:118px"></span>
+          <span class="nst-title" style="left:112px;top:62px;font-size:15px">claude-5 is asking</span>
+          <span class="nst-sub" style="left:112px;top:86px;font-size:12.5px">Freeze time, or widen the window?</span>
+          <span class="nst-sub" style="left:112px;top:108px;font-size:12px;color:rgba(255,255,255,.4)">2 working · 1 done</span>
+          ${chip(328, 56, 'api-server', '#5AB0FF', 'rgba(10,132,255,.12)')}${chip(462, 56, 'docs', '#30D158', 'rgba(48,209,88,.12)')}${chip(328, 104, 'claude-5', '#FFD426', 'rgba(255,212,38,.10)')}${chip(462, 104, 'tests', '#5AB0FF', 'rgba(10,132,255,.12)')}` },
+      { id: 'skyline', w: 580, h: 208, dots: true, say: 'Skyline: the sky for the next twelve hours.',
+        cloud: cloudBox(74, 112, 92, 'asleep'),
+        text: pageText(140, 112, 'SKYLINE', '18° · clear sky', 'Dry for 12 hours · air good', pill('Forecast', '↩') + pill('Place', 'L')) +
+          `<span class="nst-bars" style="left:420px;top:82px">${[3.6, 3.3, 3, 2.7, 2.4, 2.1, 1.9, 1.6, 1.4, 1.2, 1, .8].map((v) => `<i style="height:${Math.round(v * 14)}px"></i>`).join('')}</span><span class="nst-axis" style="left:420px;top:140px"><span>now</span><span>+6h</span><span>+12h</span></span>` },
+      { id: 'tempo', w: 580, h: 208, dots: true, say: 'Tempo: an hourglass while you focus.',
+        cloud: hourglass(),
+        text: pageText(140, 112, 'TEMPO', 'Focus · 18 min left', 'Release notes · until 16:55', pill('Pause', 'space') + pill('Timer', '↩')) + ring(486, 106) },
+    ];
+    const NS = 'http://www.w3.org/2000/svg';
+    const island = document.createElementNS(NS, 'svg'); island.classList.add('nst-island'); island.setAttribute('aria-hidden', 'true');
+    const shape = document.createElementNS(NS, 'path'); island.appendChild(shape); scale.appendChild(island);
+    const pages = PAGES.map((p) => {
+      const el = document.createElement('div'); el.className = 'nst-page'; el.style.width = p.w + 'px'; el.style.height = p.h + 'px'; el.style.marginLeft = -p.w / 2 + 'px';
+      el.innerHTML = `<div class="nst-layer nst-text">${p.text}</div><div class="nst-layer nst-cloud">${p.cloud}</div>`;
+      el.querySelectorAll('[data-cloud]').forEach((c) => new Cloud(c));
+      scale.appendChild(el); return el;
+    });
+    const hw = document.createElement('div'); hw.className = 'nst-hw'; scale.appendChild(hw);
+    const dots = document.createElement('div'); dots.className = 'nst-dots'; scale.appendChild(dots);
+    PAGES.forEach((p, i) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', p.id[0].toUpperCase() + p.id.slice(1)); b.innerHTML = '<i></i>'; b.addEventListener('click', (e) => { e.stopPropagation(); user(); go(i); }); dots.appendChild(b); });
+    function islandPath(w, h) { const e = 7, r = 30, x0 = e, x1 = e + w; return `M0 0 Q${x0} 0 ${x0} ${e} L${x0} ${h - r} Q${x0} ${h} ${x0 + r} ${h} L${x1 - r} ${h} Q${x1} ${h} ${x1} ${h - r} L${x1} ${e} Q${x1} 0 ${x1 + e} 0 Z`; }
+    let pos = 0, vel = 0, target = 0, cur = -1, drag = null, auto = !reduced, timer = 0, visible = true, raf = 0, last = 0, wheelAcc = 0, wheelQuiet = 0, wheelLock = false;
+    const clampI = (i) => Math.max(0, Math.min(PAGES.length - 1, i));
+    function go(i) { target = clampI(i); kick(); }
+    function user() { auto = false; clearTimeout(timer); }
+    function fit() { const k = Math.min(1, (screen.clientWidth - 16) / 640); scale.style.transform = `scale(${k})`; screen.style.height = Math.round(28 + 230 * k + 40) + 'px'; }
+    function render() {
+      const i = clampI(Math.round(pos)), p = PAGES[i], o = i - pos, a = Math.abs(o);
+      if (i !== cur) {
+        if (cur >= 0) pages[cur].classList.remove('on');
+        pages[i].classList.add('on'); cur = i;
+        island.setAttribute('width', p.w + 14); island.setAttribute('height', p.h); island.style.marginLeft = -(p.w + 14) / 2 + 'px';
+        shape.setAttribute('d', islandPath(p.w, p.h));
+        dots.style.display = p.dots ? 'flex' : 'none'; dots.style.top = (p.h - 12 - 7) + 'px';
+        [...dots.children].forEach((b, j) => { b.classList.toggle('on', j === i); b.setAttribute('aria-current', j === i ? 'true' : 'false'); });
+        caption.textContent = p.say;
+      }
+      const el = pages[i];
+      el.style.transform = `translateX(${(o * .55 * p.w).toFixed(1)}px)`; el.style.opacity = Math.max(0, 1 - 1.15 * a).toFixed(3);
+      el.children[1].style.transform = `translate(${(o * .5 * p.w).toFixed(1)}px, ${(-10 * a).toFixed(1)}px) scale(${(1 - .18 * a).toFixed(3)})`;
+      el.children[0].style.transform = `translateX(${(o * .15 * p.w).toFixed(1)}px)`;
+    }
+    function frame(now) {
+      raf = 0; const dt = Math.min(.033, (now - last) / 1000 || .016); last = now;
+      if (!drag) { if (reduced) { pos = target; vel = 0; } else { vel += (190 * (target - pos) - 22.5 * vel) * dt; pos += vel * dt; } }
+      render();
+      if (wheelLock && now - wheelQuiet > 220) { wheelLock = false; wheelAcc = 0; }
+      if (visible && (drag || Math.abs(target - pos) > .001 || Math.abs(vel) > .001 || wheelLock)) raf = requestAnimationFrame(frame);
+    }
+    function kick() { if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(frame); } }
+    function tour() { if (!auto) return; go((Math.round(target) + 1) % PAGES.length); timer = setTimeout(tour, 3600); }
+    // Drag (DESIGN.md 18.6): follows the pointer, 30% resistance past the ends; commits past 18% of the width or 0.45 px/ms.
+    screen.addEventListener('pointerdown', (e) => { if (e.button !== 0 || e.target.closest('button')) return; user(); screen.setPointerCapture(e.pointerId); drag = { x: e.clientX, start: pos, lx: e.clientX, lt: performance.now(), v: 0 }; vel = 0; kick(); });
+    screen.addEventListener('pointermove', (e) => {
+      if (!drag) return; const w = PAGES[clampI(Math.round(drag.start))].w * .55, now = performance.now();
+      let p = drag.start - (e.clientX - drag.x) / w; if (p < 0) p *= .3; if (p > PAGES.length - 1) p = PAGES.length - 1 + (p - PAGES.length + 1) * .3; pos = p;
+      drag.v = (e.clientX - drag.lx) / Math.max(1, now - drag.lt); drag.lx = e.clientX; drag.lt = now;
+    });
+    const release = () => { if (!drag) return; const moved = pos - drag.start, start = Math.round(drag.start), w = PAGES[start].w; let t = start;
+      if (Math.abs(moved) > .18 / .55 || Math.abs(drag.v) > .45) t = start + ((Math.abs(drag.v) > .45 ? -drag.v : moved) > 0 ? 1 : -1);
+      vel = -drag.v * 1000 / (.55 * w); drag = null; go(t); };
+    screen.addEventListener('pointerup', release); screen.addEventListener('pointercancel', release);
+    // Two-finger swipe: past 46 px, one app; then quiet for 220 ms before the next.
+    screen.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; e.preventDefault(); user(); wheelQuiet = performance.now();
+      if (wheelLock) return; wheelAcc += e.deltaX;
+      if (Math.abs(wheelAcc) > 46) { go(Math.round(target) + (wheelAcc > 0 ? 1 : -1)); wheelLock = true; wheelAcc = 0; kick(); }
+    }, { passive: false });
+    screen.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); user(); go(Math.round(target) + (e.key === 'ArrowRight' ? 1 : -1)); } });
+    fit(); window.addEventListener('resize', fit); render();
+    if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible) { kick(); if (auto && !timer) timer = setTimeout(tour, 2400); } }).observe(screen);
+    else if (auto) timer = setTimeout(tour, 2400);
   })();
 
   // The log's rail starts at the first dot, wherever text wrapping puts it.
